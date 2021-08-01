@@ -1,23 +1,119 @@
-import logo from './logo.svg';
-import './App.css';
-
+import React, { useState } from "react";
+import HeadingTop from './HeadingTop'
+const api = {
+  key: "8082895ed5bf9407cd7b6284f02fae21",
+  base: "https://api.openweathermap.org/data/2.5/",
+};
+var today = new Date();
+var currTime= today.getHours();
 function App() {
+  const [query, setQuery] = useState("");
+  const [weather, setWeather] = useState({});
+
+  const search = (evt) => {
+    if (evt.key === "Enter") {
+      fetch(`${api.base}weather?q=${query}&units=metric&APPID=${api.key}`)
+        .then((res) => res.json())
+        .then((result) => {
+          setWeather(result);
+          setQuery("");
+          console.log(result);
+        });
+    }
+  };
+
+  const dateBuilder = (d) => {
+    let months = [
+      "January",
+      "February",
+      "March",
+      "April",
+      "May",
+      "June",
+      "July",
+      "August",
+      "September",
+      "October",
+      "November",
+      "December",
+    ];
+    let days = [
+      "Sunday",
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+      "Saturday",
+    ];
+    let day = days[d.getDay()];
+    let date = d.getDate();
+    let month = months[d.getMonth()];
+    let year = d.getFullYear();
+
+    return `${day}, ${date} ${month} ${year}`;
+  };
+
+  const welcome = ["Good Morning","Good Afternoon","Good night"];
+
+  var value;
+  if (currTime < 12) {
+    value=welcome[0];
+  } else if (currTime < 18) {
+     value = welcome[1];
+  } else {
+     value = welcome[2];
+  }
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div>
+      <div className="TopHeading">
+        <HeadingTop />
+
+        <div className="date">{dateBuilder(new Date())}</div>
+      </div>
+      <div className="Welcome">
+        
+        <h2>{value}</h2>
+      </div>
+
+      <div
+        className={
+          typeof weather.main != "undefined"
+            ? weather.main.temp > 16
+              ? "app warm"
+              : "app"
+            : "app"
+        }
+      >
+        <main>
+          <div className="search-box">
+            <input
+              type="text"
+              className="search-bar"
+              placeholder="Search..."
+              onChange={(e) => setQuery(e.target.value)}
+              value={query}
+              onKeyPress={search}
+            />
+          </div>
+          {typeof weather.main != "undefined" ? (
+            <div>
+              <div className="location-box">
+                <div className="location">
+                  {weather.name}, {weather.sys.country}
+                </div>
+              </div>
+              <div className="weather-box">
+                <div className="temp">{Math.round(weather.main.temp)}°c</div>
+                <div className="weather">{weather.weather[0].main}</div>
+              </div>
+            </div>
+          ) : (
+            ""
+          )}
+        </main>
+      </div>
     </div>
   );
 }
